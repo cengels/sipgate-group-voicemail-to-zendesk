@@ -33,10 +33,12 @@ const getHistory = (accessToken, userId = 'w0') =>
 const username = process.env.USERNAME;
 const password = process.env.PASSWORD;
 
-getAccessToken(username, password)
-    .then(accessToken => {
-        getHistory(accessToken)
-            .then(console.log)
-            .catch(error => console.error("Unable to retrieve history", error));
-    })
-    .catch(error => console.error("Unable to retrieve access token", error));
+setInterval(() => {
+    getAccessToken(username, password)
+        .then(accessToken => {
+            getHistory(accessToken)
+                .then(console.log)
+                .catch(error => console.error("Unable to retrieve history", error));
+        })
+        .catch(error => console.error("Unable to retrieve access token", error));
+}, process.env.POLLING_INTERVAL_MS || 60000);
