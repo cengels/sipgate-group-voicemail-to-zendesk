@@ -14,7 +14,8 @@ const getAccessToken = (username, password) =>
             password
         },
         json: true
-    });
+    })
+        .then(result => result.token);
 
 const getHistory = (accessToken, userId = 'w0') =>
     request({
@@ -33,7 +34,7 @@ const username = process.env.USERNAME;
 const password = process.env.PASSWORD;
 
 getAccessToken(username, password)
-    .then(({token: accessToken}) => {
+    .then(accessToken => {
         getHistory(accessToken)
             .then(console.log)
             .catch(error => console.error("Unable to retrieve history", error));
