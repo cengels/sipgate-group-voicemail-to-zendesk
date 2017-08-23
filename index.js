@@ -1,5 +1,5 @@
 require('dotenv').config();
-
+const moment = require('moment');
 const request = require('request-promise-native');
 
 // sipgate REST API settings
@@ -33,11 +33,27 @@ const getHistory = (accessToken, userId = 'w0') =>
 const username = process.env.USERNAME;
 const password = process.env.PASSWORD;
 
+let mostRecentHistoryItem = moment(0);
 setInterval(() => {
     getAccessToken(username, password)
         .then(accessToken => {
             getHistory(accessToken)
-                .then(console.log)
+                .then(result => {
+                    const newItems = result.items
+                        .filter(item =>
+                            moment.max(moment(item.created), mostRecentHistoryItem) === moment(item.created)
+                        );
+
+                    console.log(result.items);
+                    console.log(newItems);
+
+                    mostRecentHistoryItem = result.items
+                        .map(item => moment(item.created))
+                        .reduce(
+                            (current, acc) => moment.max(current, acc),
+                            mostRecentHistoryItem
+                        );
+                })
                 .catch(error => console.error("Unable to retrieve history", error));
         })
         .catch(error => console.error("Unable to retrieve access token", error));
