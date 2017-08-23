@@ -1,0 +1,21 @@
+{
+  "name": "sipgate-group-voicemail-to-zendesk",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Simple sipgate voicemail to zendesk script",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "start:dev": "nodemon index.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.14.0",
+    "express-session": "^1.15.0",
+    "request": "^2.79.0",
+    "request-promise-native": "^1.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^1.11.0"
+  }
+}
