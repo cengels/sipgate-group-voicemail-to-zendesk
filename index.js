@@ -5,9 +5,8 @@ const request = require('request-promise-native');
 // sipgate REST API settings
 const apiUrl = 'https://api.sipgate.com/v2';
 
-// URL constants
-function getAccessToken(username, password) {
-    return request({
+const getAccessToken = (username, password) =>
+    request({
         uri: `${apiUrl}/authorization/token`,
         method: 'POST',
         body: {
@@ -16,10 +15,9 @@ function getAccessToken(username, password) {
         },
         json: true
     });
-}
 
-function getHistory(accessToken, userId = 'w0') {
-    return request({
+const getHistory = (accessToken, userId = 'w0') =>
+    request({
         uri: `${apiUrl}/${userId}/history`,
         qs: {
             types: 'VOICEMAIL'
@@ -30,7 +28,6 @@ function getHistory(accessToken, userId = 'w0') {
         },
         json: true
     });
-}
 
 const username = process.env.USERNAME;
 const password = process.env.PASSWORD;
