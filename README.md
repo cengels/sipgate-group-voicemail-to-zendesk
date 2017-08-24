@@ -1,6 +1,6 @@
 # Simple sipgate voicemail to zendesk script
 
-This project gives you a way to easily retrieve all group voicemails from a certain client and send them to zendesk.
+This project gives you a way to easily retrieve all group voicemails from a certain client, return them, and process them (e.g. by sending them to your help desk).
 
 ## Install
 
