@@ -2,8 +2,10 @@ require('dotenv').config();
 const moment = require('moment');
 const request = require('request-promise-native');
 
-// sipgate REST API settings
 const apiUrl = 'https://api.sipgate.com/v2';
+const NO_OP = () => {};
+const username = process.env.USERNAME;
+const password = process.env.PASSWORD;
 
 const getAccessToken = (username, password) =>
     request({
@@ -30,31 +32,55 @@ const getHistory = (accessToken, userId = 'w0') =>
         json: true
     });
 
-const username = process.env.USERNAME;
-const password = process.env.PASSWORD;
-
-let mostRecentHistoryItem = moment(0);
-setInterval(() => {
+const getNewVoiceMails = (since = moment(0), onPolling = NO_OP, onNewVoiceMails = NO_OP) => {
     getAccessToken(username, password)
         .then(accessToken => {
             getHistory(accessToken)
                 .then(result => {
                     const newItems = result.items
-                        .filter(item =>
-                            moment.max(moment(item.created), mostRecentHistoryItem) === moment(item.created)
-                        );
+                        .filter(item => moment(item.created) - since > 0);
+                    if (newItems.length > 0) {
+                        onNewVoiceMails(newItems);
+                    }
 
-                    console.log(result.items);
-                    console.log(newItems);
-
-                    mostRecentHistoryItem = result.items
+                    const mostRecentItem = result.items
                         .map(item => moment(item.created))
                         .reduce(
                             (current, acc) => moment.max(current, acc),
-                            mostRecentHistoryItem
+                            since
                         );
+                    onPolling(mostRecentItem);
+
                 })
                 .catch(error => console.error("Unable to retrieve history", error));
         })
         .catch(error => console.error("Unable to retrieve access token", error));
-}, process.env.POLLING_INTERVAL_MS || 60000);
+};
+
+const watchVoiceMails = (onNewVoiceMails = NO_OP) => {
+    let mostRecentHistoryItem = moment(0);
+
+    getNewVoiceMails(
+        mostRecentHistoryItem,
+        (mostRecentItem) => {
+            mostRecentHistoryItem = mostRecentItem;
+            setInterval(
+                () => getNewVoiceMails(
+                    mostRecentHistoryItem,
+                    (mostRecentItem) => {
+                        mostRecentHistoryItem = mostRecentItem
+                    },
+                    onNewVoiceMails
+                ),
+                process.env.POLLING_INTERVAL_MS || 60000
+            );
+        }
+    );
+};
+
+watchVoiceMails(voiceMails => {
+    voiceMails.forEach(voiceMail => {
+        console.log(`You received a new voicemail from ${voiceMail.source}, saying: "${voiceMail.transcription}".
+You can retrieve it from ${voiceMail.recordingUrl}.`);
+    })
+});
